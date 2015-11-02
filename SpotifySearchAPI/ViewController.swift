@@ -15,9 +15,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var searchText: UITextField!
     @IBOutlet weak var tableView: UITableView!
     
+    var artists : [String] = []  // model for table view
     var resultJSON : String = "" {
         didSet {
-            print("setting output")
+            print("setting output as \(resultJSON)")
             jsonOutputLabel.text = resultJSON
         }
     }
@@ -31,8 +32,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.reloadData()
     }
     
-    var artists : [String] = []
-    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("ArtistCell", forIndexPath: indexPath)
         cell.textLabel?.text = artists[indexPath.row]
@@ -42,7 +41,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return artists.count
     }
-    
     
     
     override func viewDidLoad() {
@@ -59,22 +57,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if let searchTerm = searchText.text {
             
             let url = NSURL(string: "https://ws.spotify.com/search/1/artist.json?q=\(searchTerm)")
-            
             let request = NSMutableURLRequest(URL: url!)
             
             httpGet(request){
                 (data, responseText, error) -> Void in
                 if error != nil {
-                    //self.jsonOutputLabel.text = error
                     print(error)
                 } else {
-                    // SUPER IMPORTANT!
+                    // This method runs dataTaskWithRequest, which runs on a background thread.
+                    // Switch back to the main thread to do assignments
                     dispatch_async(dispatch_get_main_queue(), {
                         self.resultJSON = responseText
                         self.parseJSONResponse(data)
                     })
-                    //self.jsonOutputLabel.text = data
-                    //print(data)
                 }
             }
             
