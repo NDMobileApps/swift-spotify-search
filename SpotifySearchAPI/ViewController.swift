@@ -19,13 +19,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         didSet {
             print("setting output")
             jsonOutputLabel.text = resultJSON
-            parseJSONResponse(resultJSON)
         }
     }
     
-    func parseJSONResponse( json : String ) -> Void {
-        artists.append("Foo Fighters")
-        artists.append("The Beatles")
+    func parseJSONResponse( data : NSData ) -> Void {
+        let json = JSON(data: data)
+        artists.removeAll()
+        for (_, artist) in json["artists"] {   // using _ in place of key because I don't care about the key (actually the index)
+            artists.append(artist["name"].stringValue)
+        }
         tableView.reloadData()
     }
     
@@ -56,19 +58,20 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBAction func search(sender: AnyObject) {
         if let searchTerm = searchText.text {
             
-            let url = NSURL(string: "https://ws.spotify.com/search/1/album.json?q=\(searchTerm)")
+            let url = NSURL(string: "https://ws.spotify.com/search/1/artist.json?q=\(searchTerm)")
             
             let request = NSMutableURLRequest(URL: url!)
             
             httpGet(request){
-                (data, error) -> Void in
+                (data, responseText, error) -> Void in
                 if error != nil {
                     //self.jsonOutputLabel.text = error
                     print(error)
                 } else {
                     // SUPER IMPORTANT!
                     dispatch_async(dispatch_get_main_queue(), {
-                        self.resultJSON = data
+                        self.resultJSON = responseText
+                        self.parseJSONResponse(data)
                     })
                     //self.jsonOutputLabel.text = data
                     //print(data)
@@ -78,16 +81,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func httpGet(request: NSURLRequest!, callback: (String, String?) -> Void) {
+    func httpGet(request: NSURLRequest!, callback: (NSData, String, String?) -> Void) {
         let session = NSURLSession.sharedSession()
         let task = session.dataTaskWithRequest(request){
             (data, response, error) -> Void in
             if error != nil {
-                callback("", error!.localizedDescription)
+                callback(data!, "", error!.localizedDescription)  // why !
             } else {
                 let result = NSString(data: data!, encoding:
                     NSASCIIStringEncoding)!
-                callback(result as String, nil)
+                callback(data!, result as String, nil)
             }
         }
         task.resume()
