@@ -26,7 +26,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func parseJSONResponse( data : NSData ) -> Void {
         let json = JSON(data: data)
         artists.removeAll()
-        for (_, artist) in json["artists"] {   // using _ in place of key because I don't care about the key (actually the index)
+        for (_, artist) in json["artists"]["items"] {   // using _ in place of key because I don't care about the key (actually the index)
             artists.append(artist["name"].stringValue)
         }
         tableView.reloadData()
@@ -56,7 +56,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBAction func search(sender: AnyObject) {
         if let searchTerm = searchText.text {
             
-            let url = NSURL(string: "https://ws.spotify.com/search/1/artist.json?q=\(searchTerm)")
+            let url = NSURL(string: "https://api.spotify.com/v1/search?type=artist&q=\(searchTerm)")
             let request = NSMutableURLRequest(URL: url!)
             
             httpGet(request){
