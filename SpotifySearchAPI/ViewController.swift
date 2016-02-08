@@ -76,6 +76,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    // See https://medium.com/swift-programming/learn-nsurlsession-using-swift-ebd80205f87c#.unry3xlo6
     func httpGet(request: NSURLRequest!, callback: (NSData, String, String?) -> Void) {
         let session = NSURLSession.sharedSession()
         let task = session.dataTaskWithRequest(request){
