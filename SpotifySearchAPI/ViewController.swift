@@ -53,44 +53,34 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Dispose of any resources that can be recreated.
     }
 
+    // See https://medium.com/swift-programming/learn-nsurlsession-using-swift-ebd80205f87c#.unry3xlo6
     @IBAction func search(sender: AnyObject) {
         if let searchTerm = searchText.text {
             
             let url = NSURL(string: "https://api.spotify.com/v1/search?type=artist&q=\(searchTerm)")
             let request = NSMutableURLRequest(URL: url!)
             
-            httpGet(request){
+            let session = NSURLSession.sharedSession()
+            let task = session.dataTaskWithRequest(request){
                 (data, responseText, error) -> Void in
                 if error != nil {
                     print(error)
                 } else {
-                    // This method runs dataTaskWithRequest, which runs on a background thread.
-                    // Switch back to the main thread to do assignments
+                    let result = NSString(data: data!, encoding:
+                        NSASCIIStringEncoding)!
                     dispatch_async(dispatch_get_main_queue(), {
-                        self.resultJSON = responseText
-                        self.parseJSONResponse(data)
+                        self.resultJSON = result as String
+                        self.parseJSONResponse(data!)
                     })
+                    
                 }
             }
+            task.resume()
             
         }
     }
     
-    // See https://medium.com/swift-programming/learn-nsurlsession-using-swift-ebd80205f87c#.unry3xlo6
-    func httpGet(request: NSURLRequest!, callback: (NSData, String, String?) -> Void) {
-        let session = NSURLSession.sharedSession()
-        let task = session.dataTaskWithRequest(request){
-            (data, response, error) -> Void in
-            if error != nil {
-                callback(data!, "", error!.localizedDescription)  // why !
-            } else {
-                let result = NSString(data: data!, encoding:
-                    NSASCIIStringEncoding)!
-                callback(data!, result as String, nil)
-            }
-        }
-        task.resume()
-    }
-
+    
+   
 }
 
