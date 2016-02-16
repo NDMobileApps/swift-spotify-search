@@ -66,10 +66,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 if error != nil {
                     print(error)
                 } else {
-                    let result = NSString(data: data!, encoding:
-                        NSASCIIStringEncoding)!
+                    let result = String(data: data!, encoding: NSASCIIStringEncoding)!
+                    
                     dispatch_async(dispatch_get_main_queue(), {
-                        self.resultJSON = result as String
+                        self.resultJSON = result
                         self.parseJSONResponse(data!)
                     })
                     
